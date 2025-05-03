@@ -130,6 +130,7 @@
     <button id="openFoodDBBtn">Show Food-Price Database</button>
     <div class="tables" id="tablesContainer"></div>
 
+    <!-- Table Modal -->
     <div class="modal" id="popup">
       <div class="modal-content" id="popupContent">
         <span id="closePopupBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
@@ -145,6 +146,7 @@
       </div>
     </div>
 
+    <!-- Add Food Modal -->
     <div class="modal" id="foodEntryPopup">
       <div class="modal-content" style="flex-direction: column; position: relative;">
         <h3>Add Food-Price Entry</h3>
@@ -157,6 +159,7 @@
       </div>
     </div>
 
+    <!-- Food Database Modal -->
     <div class="modal" id="foodDBModal">
       <div class="modal-content" style="flex-direction: column; position: relative;">
         <h3>Food-Price Database</h3>
@@ -185,6 +188,12 @@
         if (e.target === this) document.getElementById('foodDBModal').style.display = 'none';
       });
 
+      // Close "Add Food-Price Entry" Popup when clicking outside the content
+      document.getElementById('foodEntryPopup').addEventListener('click', function (e) {
+        if (e.target === this) closeFoodEntryPopup();
+      });
+
+      // Close "Table" Popup when clicking outside the content
       document.getElementById('popup').addEventListener('click', function (e) {
         if (e.target === this) closePopup();
       });
