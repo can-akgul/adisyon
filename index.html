@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Table Adder with Food Database</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f0f0f0; padding: 20px; }
+    button { padding: 10px 20px; margin: 10px 10px 20px 0; }
+    .tables { display: flex; flex-wrap: wrap; gap: 10px; }
+    .table { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; min-width: 600px; display: flex; gap: 20px; position: relative; }
+    .menu-list, .selection-summary { flex: 1; }
+    .food-item { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
+    .counter { display: flex; align-items: center; gap: 10px; }
+    .counter button { width: 30px; height: 30px; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { padding: 5px 0; }
+    #totalPriceDisplay { margin-top: 20px; font-weight: bold; text-align: right; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <button id="addTableBtn">Add Table</button>
+    <button id="openFoodEntryBtn">Add Food-Price Entry</button>
+    <button id="openFoodDBBtn">Show Food-Price Database</button>
+    <div class="tables" id="tablesContainer"></div>
+
+    <div class="modal" id="popup">
+      <div class="modal-content" id="popupContent">
+        <span id="closePopupBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
+        <div class="menu-list">
+          <h3>Menu for Table <span id="currentTableId"></span></h3>
+          <div id="menuList"></div>
+        </div>
+        <div class="selection-summary">
+          <h3>Selected Items</h3>
+          <ul id="selectedSummary"></ul>
+          <div id="totalPriceDisplay">Total: ₺0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="foodEntryPopup">
+      <div class="modal-content" style="flex-direction: column; position: relative;">
+        <h3>Add Food-Price Entry</h3>
+        <div class="input-row">
+          <input type="text" placeholder="Food" id="foodInputPopup" />
+          <input type="number" placeholder="Price" id="priceInputPopup" min="0" step="1" />
+          <button id="saveFoodPriceBtn">Add</button>
+        </div>
+        <span id="closeFoodPopupBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
+      </div>
+    </div>
+
+    <div class="modal" id="foodDBModal">
+      <div class="modal-content" style="flex-direction: column; position: relative;">
+        <h3>Food-Price Database</h3>
+        <ul id="foodPriceList"></ul>
+        <span id="closeFoodDBBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let tableCount = 0;
+      let foodPriceDB = [];
+      let tableOrders = {};
+      let currentTableId = null;
+      let currentSelectedItems = {};
+
+      document.getElementById('addTableBtn').onclick = addTable;
+      document.getElementById('openFoodEntryBtn').onclick = openFoodEntryPopup;
+      document.getElementById('saveFoodPriceBtn').onclick = saveFoodPricePopup;
+      document.getElementById('closeFoodPopupBtn').onclick = closeFoodEntryPopup;
+      document.getElementById('closePopupBtn').onclick = closePopup;
+      document.getElementById('openFoodDBBtn').onclick = () => document.getElementById('foodDBModal').style.display = 'flex';
+      document.getElementById('closeFoodDBBtn').onclick = () => document.getElementById('foodDBModal').style.display = 'none';
+      document.getElementById('foodDBModal').addEventListener('click', function (e) {
+        if (e.target === this) document.getElementById('foodDBModal').style.display = 'none';
+      });
+
+      // Add event listener to close Add Food-Price Entry popup when clicked outside the content
+      document.getElementById('foodEntryPopup').addEventListener('click', function (e) {
+        if (e.target === this) closeFoodEntryPopup();
+      });
+
+      // Add event listener to close table popup when clicked outside the content
+      document.getElementById('popup').addEventListener('click', function (e) {
+        if (e.target === this) closePopup();
+      });
+
+      function addTable() {
+        tableCount++;
+        const tableId = tableCount;
+
+        const table = document.createElement('div');
+        table.className = 'table';
+        table.innerText = 'Table ' + tableId;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.gap = '10px';
+        wrapper.appendChild(table);
+
+        table.addEventListener('click', () => openPopup(tableId));
+        document.getElementById('tablesContainer').appendChild(wrapper);
+      }
+
+      function openPopup(tableId) {
+        currentTableId = tableId;
+        document.getElementById('currentTableId').innerText = tableId;
+        const menuList = document.getElementById('menuList');
+        menuList.innerHTML = '';
+
+        if (!tableOrders[tableId]) {
+          tableOrders[tableId] = {};
+        }
+        currentSelectedItems = tableOrders[tableId];
+
+        foodPriceDB.forEach((item) => {
+          const div = document.createElement('div');
+          div.className = 'food-item';
+
+          const label = document.createElement('span');
+          label.innerText = `${item.food} - ₺${item.price}`;
+
+          const counter = document.createElement('div');
+          counter.className = 'counter';
+
+          const minusBtn = document.createElement('button');
+          minusBtn.innerText = '-';
+          const plusBtn = document.createElement('button');
+          plusBtn.innerText = '+';
+          const countDisplay = document.createElement('span');
+          countDisplay.innerText = tableOrders[tableId]?.[item.food]?.count || 0;
+
+          minusBtn.onclick = () => {
+            if (currentSelectedItems[item.food]) {
+              currentSelectedItems[item.food].count = (currentSelectedItems[item.food].count || 0) - 1;
+              if (currentSelectedItems[item.food].count < 1) {
+                delete currentSelectedItems[item.food];
+                countDisplay.innerText = '0';
+              } else {
+                countDisplay.innerText = currentSelectedItems[item.food].count;
+              }
+            }
+            tableOrders[currentTableId] = currentSelectedItems;
+            updateSummary();
+          };
+
+          plusBtn.onclick = () => {
+            if (!currentSelectedItems[item.food]) currentSelectedItems[item.food] = { ...item, count: 0 };
+            currentSelectedItems[item.food].count = (currentSelectedItems[item.food].count || 0) + 1;
+            countDisplay.innerText = currentSelectedItems[item.food].count;
+            tableOrders[currentTableId] = currentSelectedItems;
+            updateSummary();
+          };
+
+          counter.appendChild(minusBtn);
+          counter.appendChild(countDisplay);
+          counter.appendChild(plusBtn);
+
+          div.appendChild(label);
+          div.appendChild(counter);
+          menuList.appendChild(div);
+        });
+
+        updateSummary();
+        document.getElementById('popup').style.display = 'flex';
+      }
+
+      function updateSummary() {
+        const summary = document.getElementById('selectedSummary');
+        const totalDisplay = document.getElementById('totalPriceDisplay');
+        summary.innerHTML = '';
+        let total = 0;
+        const selectedItems = tableOrders[currentTableId] || {};
+        Object.keys(selectedItems).forEach(key => {
+          const item = selectedItems[key];
+          const li = document.createElement('li');
+          li.innerText = `${item.count} - ${key}`;
+          total += parseInt(item.count) * parseInt(item.price);
+          summary.appendChild(li);
+        });
+        totalDisplay.innerText = `Total: ₺${total}`;
+      }
+
+      function closePopup() {
+        document.getElementById('popup').style.display = 'none';
+      }
+
+      function openFoodEntryPopup() {
+        document.getElementById('foodEntryPopup').style.display = 'flex';
+      }
+
+      function closeFoodEntryPopup() {
+        document.getElementById('foodEntryPopup').style.display = 'none';
+      }
+
+      function saveFoodPricePopup() {
+        const food = document.getElementById('foodInputPopup').value.trim();
+        const price = document.getElementById('priceInputPopup').value.trim();
+        if (food && price) {
+          const existingItem = foodPriceDB.find(entry => entry.food.toLowerCase() === food.toLowerCase());
+          if (existingItem) {
+            existingItem.price = price;
+          } else {
+            foodPriceDB.push({ food, price });
+          }
+          updateFoodPriceList();
+          document.getElementById('foodInputPopup').value = '';
+          document.getElementById('priceInputPopup').value = '';
+        }
+      }
+
+      function updateFoodPriceList() {
+        const list = document.getElementById('foodPriceList');
+        list.innerHTML = '';
+        foodPriceDB.forEach(entry => {
+          const li = document.createElement('li');
+          li.textContent = `${entry.food} - ₺${entry.price}`;
+          list.appendChild(li);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
