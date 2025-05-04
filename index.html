@@ -227,47 +227,59 @@
         currentSelectedItems = tableOrders[tableId];
 
         categoriesOrder.forEach(cat => {
-          const items = foodPriceDB.filter(e => e.category === cat);
-          if (items.length) {
-            const header = document.createElement('div');
-            header.className = 'category';
-            header.innerText = cat;
-            const container = document.createElement('div');
-            container.className = 'category-container';
-            header.onclick = () => { container.style.display = container.style.display === 'none' ? 'block' : 'none'; };
-            menuList.appendChild(header);
-            menuList.appendChild(container);
-            items.forEach(item => {
-              const div = document.createElement('div'); div.className = 'food-item';
-              const label = document.createElement('span'); label.innerText = `${item.food} - ₺${item.price}`;
-              const counter = document.createElement('div'); counter.className = 'counter';
-              const minusBtn = document.createElement('button'); minusBtn.innerText = '-';
-              const plusBtn = document.createElement('button'); plusBtn.innerText = '+';
-              const countDisplay = document.createElement('span'); countDisplay.innerText = currentSelectedItems[item.food]?.count || 0;
-              minusBtn.onclick = () => {
-                if (currentSelectedItems[item.food]) {
-                  currentSelectedItems[item.food].count--;
-                  if (currentSelectedItems[item.food].count < 1) {
-                    delete currentSelectedItems[item.food];
-                    countDisplay.innerText = '0';
-                  } else {
-                    countDisplay.innerText = currentSelectedItems[item.food].count;
-                  }
-                }
-                updateSummary();
-              };
-              plusBtn.onclick = () => {
-                if (!currentSelectedItems[item.food]) currentSelectedItems[item.food] = { ...item, count: 0 };
-                currentSelectedItems[item.food].count++;
-                countDisplay.innerText = currentSelectedItems[item.food].count;
-                updateSummary();
-              };
-              counter.append(minusBtn, countDisplay, plusBtn);
-              div.append(label, counter);
-              container.appendChild(div);
-            });
+  const items = foodPriceDB.filter(e => e.category === cat);
+  if (items.length) {
+    const header = document.createElement('div');
+    header.className = 'category';
+    header.innerText = cat;
+    header.style.cursor = 'pointer';            // makes it look clickable
+
+    const container = document.createElement('div');
+    container.className = 'category-container';
+    container.style.display = 'none';            // ← hide by default
+
+    header.onclick = () => {
+      container.style.display =
+        container.style.display === 'none' ? 'block' : 'none';
+    };
+
+    menuList.appendChild(header);
+    menuList.appendChild(container);
+
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'food-item';
+      const label = document.createElement('span');
+      label.innerText = `${item.food} - ₺${item.price}`;
+      const counter = document.createElement('div');
+      counter.className = 'counter';
+      const minusBtn = document.createElement('button');
+      minusBtn.innerText = '-';
+      const plusBtn = document.createElement('button');
+      plusBtn.innerText = '+';
+      const countDisplay = document.createElement('span');
+      countDisplay.innerText = currentSelectedItems[item.food]?.count || 0;
+      minusBtn.onclick = () => {
+        if (currentSelectedItems[item.food]) {
+          currentSelectedItems[item.food].count--;
+          if (currentSelectedItems[item.food].count < 1) {
+            delete currentSelectedItems[item.food];
+            countDisplay.innerText = '0';
+          } else {
+            countDisplay.innerText = currentSelectedItems[item.food].count;
           }
-        });
+        }
+      };
+      plusBtn.onclick = () => {
+        // …your existing plus logic…
+      };
+      counter.append(minusBtn, countDisplay, plusBtn);
+      div.append(label, counter);
+      container.appendChild(div);
+    });
+  }
+});
+
         updateSummary();
         document.getElementById('popup').style.display = 'flex';
       }
