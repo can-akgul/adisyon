@@ -138,6 +138,7 @@
   
   .category-container {
     margin-left: 0.5rem;
+    display: none;
   }
   
   /* Food items & counters */
