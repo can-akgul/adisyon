@@ -4,124 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dynamic Table Adder with Food Database</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      padding: 20px;
-      margin: 0;
-    }
+  <link rel="stylesheet" href="style.css">
 
-    button {
-      padding: 10px 20px;
-      margin: 10px 10px 20px 0;
-      font-size: 14px;
-    }
-
-    .tables {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .table {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      cursor: pointer;
-      flex: 1 0 48%;
-      max-width: 250px;
-      text-align: center;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      display: flex;
-      gap: 20px;
-      position: relative;
-      flex-direction: column;
-      min-width: 90%;
-      max-width: 600px;
-    }
-
-    .menu-list, .selection-summary {
-      flex: 1;
-    }
-
-    .food-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 10px 0;
-    }
-
-    .counter {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .counter button {
-      width: 30px;
-      height: 30px;
-    }
-
-    ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-
-    li {
-      padding: 5px 0;
-    }
-
-    #totalPriceDisplay {
-      margin-top: 20px;
-      font-weight: bold;
-      text-align: right;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-      .table {
-        flex: 1 0 100%;
-        max-width: 100%;
-      }
-
-      button {
-        font-size: 12px;
-      }
-
-      .modal-content {
-        padding: 15px;
-      }
-
-      .food-item {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .counter {
-        margin-top: 10px;
-      }
-    }
-  </style>
 </head>
 <body>
   <div id="app">
@@ -149,34 +33,166 @@
     <!-- Add Food Modal -->
     <div class="modal" id="foodEntryPopup">
       <div class="modal-content" style="flex-direction: column; position: relative;">
+        <span id="closeFoodPopupBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
         <h3>Add Food-Price Entry</h3>
-        <div class="input-row">
+        <div class="input-row" style="display:flex;flex-direction:column;gap:10px;">
+          <label>Category:
+            <select id="categoryInputPopup">
+              <option value="Kahvaltılar">Kahvaltılar</option>
+              <option value="Hamburger Menüleri">Hamburger Menüleri</option>
+              <option value="Tost Çeşitleri">Tost Çeşitleri</option>
+              <option value="Ara Sıcaklar">Ara Sıcaklar</option>
+              <option value="Makarna Çeşitleri">Makarna Çeşitleri</option>
+              <option value="Atıştırmalıklar">Atıştırmalıklar</option>
+              <option value="Salata Çeşitleri">Salata Çeşitleri</option>
+              <option value="Burger Çeşitleri">Burger Çeşitleri</option>
+              <option value="Sıcak İçecekler">Sıcak İçecekler</option>
+              <option value="Soğuk Kahve Çeşitleri">Soğuk Kahve Çeşitleri</option>
+              <option value="Soğuk İçecekler">Soğuk İçecekler</option>
+              <option value="Tatlılar">Tatlılar</option>
+            </select>
+          </label>
           <input type="text" placeholder="Food" id="foodInputPopup" />
           <input type="number" placeholder="Price" id="priceInputPopup" min="0" step="1" />
           <button id="saveFoodPriceBtn">Add</button>
         </div>
-        <span id="closeFoodPopupBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
       </div>
     </div>
 
     <!-- Food Database Modal -->
     <div class="modal" id="foodDBModal">
       <div class="modal-content" style="flex-direction: column; position: relative;">
+        <span id="closeFoodDBBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
         <h3>Food-Price Database</h3>
         <ul id="foodPriceList"></ul>
-        <span id="closeFoodDBBtn" style="position: absolute; top: 10px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold;">×</span>
       </div>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
+      const categoriesOrder = [
+        'Kahvaltılar','Hamburger Menüleri','Tost Çeşitleri','Ara Sıcaklar','Makarna Çeşitleri',
+        'Atıştırmalıklar','Salata Çeşitleri','Burger Çeşitleri','Sıcak İçecekler',
+        'Soğuk Kahve Çeşitleri','Soğok İçecekler','Tatlılar'
+      ];
       let tableCount = 0;
-      let foodPriceDB = [];
       let tableOrders = {};
       let currentTableId = null;
       let currentSelectedItems = {};
+      const foodEntryPopup = document.getElementById('foodEntryPopup');
 
+      // Default database entries
+      let foodPriceDB = [
+        // Kahvaltılar
+        { food: 'Serpme Kahvaltı (2 Kişilik)', price: 500, category: 'Kahvaltılar' },
+        { food: 'Kahvaltı Tabağı (Tek Kişilik)', price: 150, category: 'Kahvaltılar' },
+        { food: 'Söğüş Tabağı', price: 100, category: 'Kahvaltılar' },
+        { food: 'Sahanda Yumurta (2 Adet)', price: 90, category: 'Kahvaltılar' },
+        { food: 'Menemen', price: 120, category: 'Kahvaltılar' },
+        { food: 'Kaşarlı Menemen', price: 150, category: 'Kahvaltılar' },
+        { food: 'Sucuklu Menemen', price: 150, category: 'Kahvaltılar' },
+        { food: 'Sucuklu Kaşarlı Menemen', price: 160, category: 'Kahvaltılar' },
+        { food: 'Patso', price: 75, category: 'Kahvaltılar' },
+        { food: 'Su Böreği (Dilim)', price: 50, category: 'Kahvaltılar' },
+        { food: 'Sade Omlet', price: 90, category: 'Kahvaltılar' },
+        { food: 'Sucuklu Omlet', price: 110, category: 'Kahvaltılar' },
+        { food: 'Kaşarlı Omlet', price: 100, category: 'Kahvaltılar' },
+        { food: 'Karışık Omlet', price: 120, category: 'Kahvaltılar' },
+        // Hamburger Menüleri
+        { food: 'Piliç Hamburger Menü 1', price: 230, category: 'Hamburger Menüleri' },
+        { food: 'Piliç Hamburger Menü 2', price: 260, category: 'Hamburger Menüleri' },
+        { food: 'Piliç Cheeseburger Menü 1', price: 250, category: 'Hamburger Menüleri' },
+        { food: 'Piliç Cheeseburger Menü 2', price: 280, category: 'Hamburger Menüleri' },
+        { food: 'Dana Hamburger Menü 1', price: 280, category: 'Hamburger Menüleri' },
+        { food: 'Dana Hamburger Menü 2', price: 310, category: 'Hamburger Menüleri' },
+        // Tost Çeşitleri
+        { food: 'Sucuklu Tost', price: 100, category: 'Tost Çeşitleri' },
+        { food: 'Kaşarlı Tost', price: 90, category: 'Tost Çeşitleri' },
+        { food: 'Karışık Tost', price: 110, category: 'Tost Çeşitleri' },
+        { food: 'Yumurtalı Kaşarlı Tost', price: 110, category: 'Tost Çeşitleri' },
+        { food: 'Yumurtalı Sucuklu Tost', price: 130, category: 'Tost Çeşitleri' },
+        { food: 'Yumurtalı Karışık Tost', price: 140, category: 'Tost Çeşitleri' },
+        { food: 'Özel Tost', price: 170, category: 'Tost Çeşitleri' },
+        // Ara Sıcaklar
+        { food: 'Nohutlu Pilav Üstü Tavuk', price: 150, category: 'Ara Sıcaklar' },
+        { food: 'Sucuk Ekmek', price: 150, category: 'Ara Sıcaklar' },
+        { food: 'Kaşarlı Sucuk Ekmek', price: 180, category: 'Ara Sıcaklar' },
+        { food: 'Kiremitte Karides', price: 280, category: 'Ara Sıcaklar' },
+        { food: 'Kiremitte Kalamar', price: 280, category: 'Ara Sıcaklar' },
+        { food: 'Kiremitte Mantar', price: 180, category: 'Ara Sıcaklar' },
+        // Makarna Çeşitleri
+        { food: 'Köri Soslu Tavuklu Makarna', price: 250, category: 'Makarna Çeşitleri' },
+        { food: 'Barbekü Soslu Tavuklu Makarna', price: 260, category: 'Makarna Çeşitleri' },
+        { food: 'Chilli Soslu Tavuklu Makarna', price: 250, category: 'Makarna Çeşitleri' },
+        // Atıştırmalıklar
+        { food: 'İçli Köfte (Adet)', price: 90, category: 'Atıştırmalıklar' },
+        { food: 'Çiğ Köfte Dürüm (90 Gram)', price: 65, category: 'Atıştırmalıklar' },
+        { food: 'Doritoslu Çiğ Köfte Dürüm (90 Gram)', price: 75, category: 'Atıştırmalıklar' },
+        { food: 'Çiğ Köfte Porsiyon (200 Gram)', price: 120, category: 'Atıştırmalıklar' },
+        { food: 'Kızarmış Patates', price: 100, category: 'Atıştırmalıklar' },
+        { food: 'Çıtır Tavuk Sepeti (6 Adet)', price: 200, category: 'Atıştırmalıklar' },
+        { food: 'Sigara Böreği (Parmak Börek 8 Adet)', price: 110, category: 'Atıştırmalıklar' },
+        { food: 'Soğan Halkası (7 Adet)', price: 100, category: 'Atıştırmalıklar' },
+        { food: 'Çiçek Sosis (7 Adet)', price: 100, category: 'Atıştırmalıklar' },
+        { food: 'Aperatif Tabağı (Patates Kızartması, Çıtır Tavuk 2 Adet, Parmak Börek 2 Adet, Çiçek Sosis 2 Adet, Patates Kroket 3 Adet, Soğan Halkası 3 Adet)', price: 300, category: 'Atıştırmalıklar' },
+        // Salata Çeşitleri
+        { food: 'Tavuklu Sezar Salata', price: 230, category: 'Salata Çeşitleri' },
+        { food: 'Ton Balıklı Salata', price: 250, category: 'Salata Çeşitleri' },
+        { food: 'Beyaz Peynirli Salata', price: 210, category: 'Salata Çeşitleri' },
+        // Sıcak İçecekler
+        { food: 'Çay', price: 20, category: 'Sıcak İçecekler' },
+        { food: 'Duble Çay', price: 30, category: 'Sıcak İçecekler' },
+        { food: 'Türk Kahvesi', price: 70, category: 'Sıcak İçecekler' },
+        { food: 'Damla Sakızlı Türk Kahvesi', price: 80, category: 'Sıcak İçecekler' },
+        { food: 'Dibek Türk Kahvesi', price: 80, category: 'Sıcak İçecekler' },
+        { food: 'Salep', price: 90, category: 'Sıcak İçecekler' },
+        { food: 'Bitki Çayı Çeşitleri', price: 50, category: 'Sıcak İçecekler' },
+        { food: 'Nescafe (Sade)', price: 70, category: 'Sıcak İçecekler' },
+        { food: 'Nescafe (Sütlü)', price: 90, category: 'Sıcak İçecekler' },
+        { food: 'Sıcak Çikolata', price: 90, category: 'Sıcak İçecekler' },
+        { food: 'Filtre Kahve', price: 100, category: 'Sıcak İçecekler' },
+        { food: 'Espresso', price: 90, category: 'Sıcak İçecekler' },
+        { food: 'Double Espresso', price: 150, category: 'Sıcak İçecekler' },
+        { food: 'Americano', price: 90, category: 'Sıcak İçecekler' },
+        { food: 'Mocha', price: 100, category: 'Sıcak İçecekler' },
+        { food: 'White Chocolate Mocha', price: 110, category: 'Sıcak İçecekler' },
+        { food: 'Karamel Macchiato', price: 110, category: 'Sıcak İçecekler' },
+        { food: 'Latte', price: 100, category: 'Sıcak İçecekler' },
+        // Soğuk Kahve Çeşitleri
+        { food: 'Iced Americano', price: 100, category: 'Soğuk Kahve Çeşitleri' },
+        { food: 'Iced Latte', price: 110, category: 'Soğuk Kahve Çeşitleri' },
+        { food: 'Iced Mocha', price: 120, category: 'Soğuk Kahve Çeşitleri' },
+        { food: 'Iced White Mocha', price: 120, category: 'Soğuk Kahve Çeşitleri' },
+        { food: 'Iced Filtre', price: 80, category: 'Soğuk Kahve Çeşitleri' },
+        { food: 'Iced Caramel Latte', price: 120, category: 'Soğuk Kahve Çeşitleri' },
+        // Tatlılar
+        { food: 'Magnolya', price: 130, category: 'Tatlılar' },
+        { food: 'Tiramisu', price: 100, category: 'Tatlılar' },
+        { food: 'Cheesecake', price: 150, category: 'Tatlılar' },
+        { food: 'Pasta (Adet)', price: 115, category: 'Tatlılar' },
+        { food: 'Spangle', price: 100, category: 'Tatlılar' },
+        { food: 'Profiterol', price: 100, category: 'Tatlılar' },
+        { food: 'Ekler (Adet)', price: 20, category: 'Tatlılar' },
+        { food: 'Sütlaç', price: 75, category: 'Tatlılar' },
+        { food: 'Medovik', price: 100, category: 'Tatlılar' },
+        { food: 'Kuru Pasta (Kilo)', price: 350, category: 'Tatlılar' },
+        { food: 'Triliçe', price: 100, category: 'Tatlılar' },
+        { food: 'Donut', price: 50, category: 'Tatlılar' },
+        { food: 'Kadife Kek', price: 100, category: 'Tatlılar' },
+        { food: 'Velvet', price: 100, category: 'Tatlılar' },
+        { food: 'Külahta Dondurma (Top)', price: 20, category: 'Tatlılar' },
+        { food: 'Dondurma Servis (Top)', price: 25, category: 'Tatlılar' },
+        { food: 'Waffle', price: 200, category: 'Tatlılar' },
+        { food: 'Soğuk Baklava (Kilo)', price: 550, category: 'Tatlılar' },
+        { food: 'Sarı Burma (Kilo)', price: 300, category: 'Tatlılar' },
+        { food: 'Cevizli Baklava (Kilo)', price: 300, category: 'Tatlılar' },
+        { food: 'Antep Fıstıklı Baklava (Kilo)', price: 550, category: 'Tatlılar' },
+        { food: 'Bülbül Yuvası (Kilo)', price: 300, category: 'Tatlılar' },
+        { food: 'Çikolatalı Baklava (Kilo)', price: 300, category: 'Tatlılar' }
+      ];
+
+      // Event listeners
       document.getElementById('addTableBtn').onclick = addTable;
       document.getElementById('openFoodEntryBtn').onclick = openFoodEntryPopup;
       document.getElementById('saveFoodPriceBtn').onclick = saveFoodPricePopup;
@@ -184,36 +200,22 @@
       document.getElementById('closePopupBtn').onclick = closePopup;
       document.getElementById('openFoodDBBtn').onclick = () => document.getElementById('foodDBModal').style.display = 'flex';
       document.getElementById('closeFoodDBBtn').onclick = () => document.getElementById('foodDBModal').style.display = 'none';
-      document.getElementById('foodDBModal').addEventListener('click', function (e) {
-        if (e.target === this) document.getElementById('foodDBModal').style.display = 'none';
-      });
+      document.getElementById('foodDBModal').addEventListener('click', e => { if (e.target === document.getElementById('foodDBModal')) closeFoodDB(); });
+      document.getElementById('popup').addEventListener('click', e => { if (e.target === document.getElementById('popup')) closePopup(); });
+      foodEntryPopup.addEventListener('click', e => { if (e.target === foodEntryPopup) closeFoodEntryPopup(); });
+      foodEntryPopup.addEventListener('touchstart', e => { if (e.target === foodEntryPopup) closeFoodEntryPopup(); });
 
-      // Close "Add Food-Price Entry" Popup when clicking outside the content
-      document.getElementById('foodEntryPopup').addEventListener('click', function (e) {
-        if (e.target === this) closeFoodEntryPopup();
-      });
-
-      // Close "Table" Popup when clicking outside the content
-      document.getElementById('popup').addEventListener('click', function (e) {
-        if (e.target === this) closePopup();
-      });
+      // Initial render
+      updateFoodPriceList();
 
       function addTable() {
         tableCount++;
         const tableId = tableCount;
-
         const table = document.createElement('div');
         table.className = 'table';
         table.innerText = 'Table ' + tableId;
-
-        const wrapper = document.createElement('div');
-        wrapper.style.display = 'flex';
-        wrapper.style.alignItems = 'center';
-        wrapper.style.gap = '10px';
-        wrapper.appendChild(table);
-
-        table.addEventListener('click', () => openPopup(tableId));
-        document.getElementById('tablesContainer').appendChild(wrapper);
+        table.onclick = () => openPopup(tableId);
+        document.getElementById('tablesContainer').appendChild(table);
       }
 
       function openPopup(tableId) {
@@ -221,102 +223,63 @@
         document.getElementById('currentTableId').innerText = tableId;
         const menuList = document.getElementById('menuList');
         menuList.innerHTML = '';
-
-        if (!tableOrders[tableId]) {
-          tableOrders[tableId] = {};
-        }
+        if (!tableOrders[tableId]) tableOrders[tableId] = {};
         currentSelectedItems = tableOrders[tableId];
 
-        foodPriceDB.forEach((item) => {
-          const div = document.createElement('div');
-          div.className = 'food-item';
-
-          const label = document.createElement('span');
-          label.innerText = `${item.food} - ₺${item.price}`;
-
-          const counter = document.createElement('div');
-          counter.className = 'counter';
-
-          const minusBtn = document.createElement('button');
-          minusBtn.innerText = '-';
-          const plusBtn = document.createElement('button');
-          plusBtn.innerText = '+';
-          const countDisplay = document.createElement('span');
-          countDisplay.innerText = tableOrders[tableId]?.[item.food]?.count || 0;
-
-          minusBtn.onclick = () => {
-            if (currentSelectedItems[item.food]) {
-              currentSelectedItems[item.food].count = (currentSelectedItems[item.food].count || 0) - 1;
-              if (currentSelectedItems[item.food].count < 1) {
-                delete currentSelectedItems[item.food];
-                countDisplay.innerText = '0';
-              } else {
+        categoriesOrder.forEach(cat => {
+          const items = foodPriceDB.filter(e => e.category === cat);
+          if (items.length) {
+            const header = document.createElement('div');
+            header.className = 'category';
+            header.innerText = cat;
+            const container = document.createElement('div');
+            container.className = 'category-container';
+            header.onclick = () => { container.style.display = container.style.display === 'none' ? 'block' : 'none'; };
+            menuList.appendChild(header);
+            menuList.appendChild(container);
+            items.forEach(item => {
+              const div = document.createElement('div'); div.className = 'food-item';
+              const label = document.createElement('span'); label.innerText = `${item.food} - ₺${item.price}`;
+              const counter = document.createElement('div'); counter.className = 'counter';
+              const minusBtn = document.createElement('button'); minusBtn.innerText = '-';
+              const plusBtn = document.createElement('button'); plusBtn.innerText = '+';
+              const countDisplay = document.createElement('span'); countDisplay.innerText = currentSelectedItems[item.food]?.count || 0;
+              minusBtn.onclick = () => {
+                if (currentSelectedItems[item.food]) {
+                  currentSelectedItems[item.food].count--;
+                  if (currentSelectedItems[item.food].count < 1) {
+                    delete currentSelectedItems[item.food];
+                    countDisplay.innerText = '0';
+                  } else {
+                    countDisplay.innerText = currentSelectedItems[item.food].count;
+                  }
+                }
+                updateSummary();
+              };
+              plusBtn.onclick = () => {
+                if (!currentSelectedItems[item.food]) currentSelectedItems[item.food] = { ...item, count: 0 };
+                currentSelectedItems[item.food].count++;
                 countDisplay.innerText = currentSelectedItems[item.food].count;
-              }
-            }
-            tableOrders[currentTableId] = currentSelectedItems;
-            updateSummary();
-          };
-
-          plusBtn.onclick = () => {
-            if (!currentSelectedItems[item.food]) currentSelectedItems[item.food] = { ...item, count: 0 };
-            currentSelectedItems[item.food].count = (currentSelectedItems[item.food].count || 0) + 1;
-            countDisplay.innerText = currentSelectedItems[item.food].count;
-            tableOrders[currentTableId] = currentSelectedItems;
-            updateSummary();
-          };
-
-          counter.appendChild(minusBtn);
-          counter.appendChild(countDisplay);
-          counter.appendChild(plusBtn);
-
-          div.appendChild(label);
-          div.appendChild(counter);
-          menuList.appendChild(div);
+                updateSummary();
+              };
+              counter.append(minusBtn, countDisplay, plusBtn);
+              div.append(label, counter);
+              container.appendChild(div);
+            });
+          }
         });
-
         updateSummary();
         document.getElementById('popup').style.display = 'flex';
-      }
-
-      function updateSummary() {
-        const summary = document.getElementById('selectedSummary');
-        const totalDisplay = document.getElementById('totalPriceDisplay');
-        summary.innerHTML = '';
-        let total = 0;
-        const selectedItems = tableOrders[currentTableId] || {};
-        Object.keys(selectedItems).forEach(key => {
-          const item = selectedItems[key];
-          const li = document.createElement('li');
-          li.innerText = `${item.count} - ${key}`;
-          total += parseInt(item.count) * parseInt(item.price);
-          summary.appendChild(li);
-        });
-        totalDisplay.innerText = `Total: ₺${total}`;
-      }
-
-      function closePopup() {
-        document.getElementById('popup').style.display = 'none';
-      }
-
-      function openFoodEntryPopup() {
-        document.getElementById('foodEntryPopup').style.display = 'flex';
-      }
-
-      function closeFoodEntryPopup() {
-        document.getElementById('foodEntryPopup').style.display = 'none';
       }
 
       function saveFoodPricePopup() {
         const food = document.getElementById('foodInputPopup').value.trim();
         const price = document.getElementById('priceInputPopup').value.trim();
+        const category = document.getElementById('categoryInputPopup').value;
         if (food && price) {
-          const existingItem = foodPriceDB.find(entry => entry.food.toLowerCase() === food.toLowerCase());
-          if (existingItem) {
-            existingItem.price = price;
-          } else {
-            foodPriceDB.push({ food, price });
-          }
+          const existing = foodPriceDB.find(e => e.food.toLowerCase() === food.toLowerCase() && e.category === category);
+          if (existing) existing.price = parseFloat(price);
+          else foodPriceDB.push({ food, price: parseFloat(price), category });
           updateFoodPriceList();
           document.getElementById('foodInputPopup').value = '';
           document.getElementById('priceInputPopup').value = '';
@@ -324,14 +287,33 @@
       }
 
       function updateFoodPriceList() {
-        const list = document.getElementById('foodPriceList');
-        list.innerHTML = '';
-        foodPriceDB.forEach(entry => {
-          const li = document.createElement('li');
-          li.textContent = `${entry.food} - ₺${entry.price}`;
-          list.appendChild(li);
+        const list = document.getElementById('foodPriceList'); list.innerHTML = '';
+        categoriesOrder.forEach(cat => {
+          const items = foodPriceDB.filter(e => e.category === cat);
+          if (items.length) {
+            const heading = document.createElement('li'); heading.className = 'category'; heading.innerText = cat; list.appendChild(heading);
+            items.forEach(entry => {
+              const li = document.createElement('li'); li.className = 'item'; li.textContent = `${entry.food} - ₺${entry.price}`; list.appendChild(li);
+            });
+          }
         });
       }
+
+      function updateSummary() {
+        const summary = document.getElementById('selectedSummary'); summary.innerHTML = '';
+        let total = 0;
+        Object.values(currentSelectedItems).forEach(item => {
+          total += item.count * item.price;
+          const li = document.createElement('li'); li.innerText = `${item.count}x ${item.food}`;
+          summary.appendChild(li);
+        });
+        document.getElementById('totalPriceDisplay').innerText = `Total: ₺${total}`;
+      }
+
+      function closePopup() { document.getElementById('popup').style.display = 'none'; }
+      function openFoodEntryPopup() { foodEntryPopup.style.display = 'flex'; }
+      function closeFoodEntryPopup() { foodEntryPopup.style.display = 'none'; }
+      function closeFoodDB() { document.getElementById('foodDBModal').style.display = 'none'; }
     });
   </script>
 </body>

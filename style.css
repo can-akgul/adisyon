@@ -1,0 +1,226 @@
+/* style.css */
+
+/* Theme Variables */
+:root {
+    --bg-light: #f0f0f0;
+    --bg-card: #ffffff;
+    --text: #333;
+    --accent: #ff8c00;        /* orange */
+    --accent-hover: #e67e22;  /* darker orange */
+    --shadow: rgba(0, 0, 0, 0.1);
+    --radius: 0.5rem;
+    --spacing: 1rem;
+    --ease: ease-in-out;
+    --transition: 0.3s var(--ease);
+  }
+  
+  /* Global reset & base */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    padding: var(--spacing);
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    background-color: var(--bg-light);
+    color: var(--text);
+    font-size: 1rem; /* 16px */
+  }
+  
+  /* Buttons */
+  button {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    margin: 0 var(--spacing) var(--spacing) 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+    background-color: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color var(--transition), transform var(--transition);
+  }
+  
+  button:hover,
+  button:focus {
+    background-color: var(--accent-hover);
+    outline: none;
+    transform: translateY(-2px);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  /* Tables container using CSS Grid */
+  .tables {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--spacing);
+    justify-items: center;
+    margin-top: var(--spacing);
+  }
+  
+  /* Table cards */
+  .table {
+    background: var(--bg-card);
+    padding: var(--spacing);
+    border-radius: var(--radius);
+    box-shadow: 0 0.25rem 0.5rem var(--shadow);
+    width: 100%;
+    max-width: 16rem;
+    text-align: center;
+    transition: transform var(--transition), box-shadow var(--transition);
+    cursor: pointer;
+  }
+  
+  .table:hover,
+  .table:focus-within {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1rem var(--shadow);
+    outline: none;
+  }
+  
+  /* Modals */
+  .modal {
+    display: none; /* toggled via JS */
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: var(--spacing);
+    overflow-y: auto;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: var(--spacing);
+    width: min(100%, 40rem);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing);
+    overflow-y: auto;
+    box-shadow: 0 0.5rem 1rem var(--shadow);
+    transition: transform var(--transition);
+  }
+  
+  .modal.show .modal-content {
+    transform: scale(1);
+  }
+  
+  .modal.hide .modal-content {
+    transform: scale(0.9);
+  }
+  
+  /* Scrollable panes */
+  .menu-list,
+  .selection-summary {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+  
+  /* Category headings */
+  .category {
+    font-weight: 700;
+    margin-top: 1rem;
+    cursor: pointer;
+  }
+  
+  .category-container {
+    margin-left: 0.5rem;
+  }
+  
+  /* Food items & counters */
+  .food-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.75rem 0;
+  }
+  
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .counter button {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+    background-color: var(--bg-light);
+    color: var(--text);
+    border: 1px solid var(--shadow);
+    border-radius: var(--radius);
+    transition: background-color var(--transition);
+  }
+  
+  .counter button:hover {
+    background-color: var(--accent);
+    color: #fff;
+  }
+  
+  /* Lists */
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  li {
+    padding: 0.5rem 0;
+  }
+  
+  /* Price summary */
+  #totalPriceDisplay {
+    margin-top: 1rem;
+    text-align: right;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  /* Close buttons */
+  #closePopupBtn,
+  #closeFoodPopupBtn,
+  #closeFoodDBBtn {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    color: var(--text);
+  }
+  
+  /* Form inside "Add Food" modal */
+  .input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  /* Responsive typography */
+  @media (max-width: 768px) {
+    body {
+      font-size: 0.9375rem; /* 15px */
+    }
+    button {
+      font-size: 0.875rem;
+    }
+    .modal-content {
+      padding: 0.75rem;
+    }
+  }
+  
